@@ -1,51 +1,74 @@
 import React, { useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import {
+    View,
+    Text,
+    FlatList,
+    StyleSheet,
+    TouchableOpacity,
+    Image,
+    Dimensions,
+} from 'react-native';
 import { CartContext } from '../context/CartContext';
 import products from '../data/products';
-import Header from '../components/Header'; // importando o componente de cabeçalho
+import Header from '../components/Header';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+const screenHeight = Dimensions.get('window').height;
 
 const ProductListScreen = ({ navigation }) => {
     const { addToCart } = useContext(CartContext);
 
     const renderItem = ({ item }) => (
-        <View style={styles.card}>
-            <Image source={item.image} style={styles.image} />
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.price}>R$ {item.price.toFixed(2)}</Text>
-            <View style={styles.buttonRow}>
-                <TouchableOpacity
-                    style={styles.detailsBtn}
-                    onPress={() => navigation.navigate('ProductDetails', { product: item })}
-                >
-                    <Text style={styles.detailsText}>Detalhes</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.cartBtn}
-                    onPress={() => addToCart(item)}
-                >
-                    <Text style={styles.cartText}>+ Carrinho</Text>
+        <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate('ProductDetails', { product: item })}
+        >
+            <View style={styles.cardInner}>
+                {/* Imagem e nome */}
+                <View style={styles.contentRow}>
+                    <Image source={item.image} style={styles.image} />
+                    <View style={styles.textContainer}>
+                        <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
+                            {item.name}
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Preço e parcelamento */}
+                <View style={styles.priceSection}>
+                    <Text style={styles.price}>R$ {item.price.toFixed(2)}</Text>
+                    <Text style={styles.installments}>À vista no PIX</Text>
+                    <Text style={styles.installments}>ou 10x de R$ {(item.price / 10).toFixed(2)}</Text>
+                </View>
+
+                {/* Botão de comprar */}
+                <TouchableOpacity style={styles.cartBtn} onPress={() => addToCart(item)}>
+                    <View style={styles.cartBtnContent}>
+                        <Icon name="cart" size={16} color="#fff" style={{ marginRight: 6 }} />
+                        <Text style={styles.cartText}>Comprar</Text>
+                    </View>
                 </TouchableOpacity>
             </View>
-        </View>
+        </TouchableOpacity>
     );
+
 
     return (
         <View style={styles.container}>
             <Header title="Kabum Clone" />
 
-
             <View style={styles.topBar}>
-                <Text style={styles.title}>Produtos</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
-                    <Text style={styles.cartLink}>🛒 Carrinho</Text>
-                </TouchableOpacity>
+                <View style={styles.filter}>
+                    <Text style={styles.title}>🔍 Filtros</Text>
+                </View>
+                <Text style={styles.cartLink}>Mais Procurados</Text>
             </View>
 
             <FlatList
                 data={products}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
-                numColumns={2}
+                ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
             />
         </View>
     );
@@ -55,7 +78,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f2f2f2',
-        padding: 10,
+        paddingHorizontal: 10,
     },
     topBar: {
         flexDirection: 'row',
@@ -75,63 +98,78 @@ const styles = StyleSheet.create({
     card: {
         backgroundColor: '#fff',
         borderRadius: 10,
-        flex: 1,
-        margin: 5,
         padding: 10,
-        alignItems: 'center',
         elevation: 3,
-        flexDirection: 'column', // Garante que os elementos no card ficam empilhados verticalmente
+        justifyContent: 'center',
+        height: screenHeight * 0.32,
+    },
+
+    cardInner: {
+        flex: 1,
+        justifyContent: 'space-between',
+    },
+    cardContent: {
+        flex: 1,
+        justifyContent: 'space-between',
+    },
+    contentRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     image: {
         width: 100,
         height: 100,
         resizeMode: 'contain',
+        marginRight: 10,
+    },
+    textContainer: {
+        flex: 1,
+        justifyContent: 'flex-start',
     },
     name: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: '600',
         color: '#333',
-        marginTop: 8,
-        textAlign: 'center',
+        textAlign: 'left',
+        marginTop: 20,
+    },
+    priceSection: {
+        alignItems: 'center',
+        marginTop: 10,
     },
     price: {
-        marginTop: 4,
-        fontSize: 14,
+        fontSize: 16,
         color: '#f26a0a',
         fontWeight: 'bold',
     },
-    buttonRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between', // Espalha os botões
-        marginTop: 10,
-        width: '100%', // Garante que a linha ocupe toda a largura do card
-        marginTop: 'auto', // Empurra para o final do card
-    },
-    detailsBtn: {
-        marginRight: 6,
-        backgroundColor: '#0054a6',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 6,
-    },
-    detailsText: {
-        color: '#fff',
-        fontWeight: 'bold',
+    installments: {
         fontSize: 12,
+        color: '#777',
+        marginTop: 2,
     },
     cartBtn: {
         backgroundColor: '#f26a0a',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
+        paddingVertical: 10,
         borderRadius: 6,
+        alignItems: 'center',
+        alignSelf: 'center',
+        width: '90%',
+    },
+    cartBtnContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     cartText: {
         color: '#fff',
         fontWeight: 'bold',
-        fontSize: 12,
+        fontSize: 14,
+    },
+    filter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
     },
 });
-
-
 
 export default ProductListScreen;
